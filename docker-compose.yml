@@ -1,0 +1,55 @@
+version: "3.9"
+services:
+  frontend:
+    networks:
+      - frontend
+    container_name: container-frontend
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+      args:
+        - REACT_APP_BACKEND_HOST=${REACT_APP_BACKEND_HOST}
+    image: image-frontend
+    ports:
+      - 8081:80
+    restart: unless-stopped
+  backend:
+    networks:
+      - backend
+    container_name: container-backend
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    image: image-backend
+    env_file:
+      - .env
+    ports:
+      - 4000:3000
+    depends_on:
+      - postgres
+    restart: unless-stopped
+  postgres:
+    networks:
+      - backend
+    container_name: container-postgres
+    image: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    ports:
+      - 5432:5432
+    restart: unless-stopped
+  adminer:
+    networks:
+      - backend
+    container_name: container-adminer
+    image: adminer
+    ports:
+      - 8080:8080
+    restart: unless-stopped
+volumes:
+  postgres_data:
+networks:
+  frontend:
+  backend:
